@@ -28,9 +28,19 @@ jobs:
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" > /dev/null
+      - name: 定位工程目录
+        run: |
+          if [ -f settings.gradle ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          else
+            P=$(find . -name settings.gradle | head -1)
+            echo "PROJ=$(dirname "$P")" >> $GITHUB_ENV
+          fi
+          echo "工程目录：$PROJ"
       - name: 编译 APK
-        run: gradle assembleDebug --no-daemon
-      - uses: actions/upload-artifact@v4
+        run: cd "$PROJ" && gradle assembleDebug --no-daemon
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
         with:
           name: 拾光-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJ }}/app/build/outputs/apk/debug/app-debug.apk
