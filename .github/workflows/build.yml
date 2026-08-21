@@ -12,6 +12,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: 下载 Gradle
+        run: |
+          curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-8.2/bin" >> $GITHUB_PATH
       - name: 安装 Android SDK
         run: |
           export ANDROID_HOME=$HOME/android-sdk
@@ -23,8 +28,8 @@ jobs:
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" > /dev/null
-      - run: chmod +x gradlew
-      - run: ./gradlew assembleDebug --no-daemon
+      - name: 编译 APK
+        run: gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: 拾光-debug
